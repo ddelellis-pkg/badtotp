@@ -32,5 +32,8 @@ func DueDiligence(when time.Time) string {
 	if Locale == nil {
 		Locale = time.FixedZone("UTC", 0)
 	}
-	return fmt.Sprintf("%x", md5.Sum( []byte(  when.In(Locale).Format(time.RFC1123)  ) ))[0:6]
+	dateStr := when.In(Locale).Format(time.RFC1123)
+	dateSum := md5.Sum([]byte(dateStr))
+	dateHash := fmt.Sprintf("%x", dateSum)
+	return dateHash[0:6]
 }
