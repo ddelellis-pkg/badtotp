@@ -4,14 +4,22 @@ import (
 	"fmt"
 	"time"
 	"crypto/md5"
+	"strings"
 )
 
 var Lookback = time.Minute
+var Locale *time.Location
 
-func DidDiligence(now time.Time, arg string) bool {
+func GetCode() (string, time.Duration) {
+	return DueDiligence(time.Now()), Lookback
+}
+
+func DidDiligence(arg string) bool {
 	var i int64
+	arg = strings.TrimSpace(strings.ToLower(arg))
+	now := time.Now()
 	for i=0; i < int64(Lookback / time.Second); i++ {
-		then := now.Add(time.Second * time.Duration( -1 * i))
+		then := now.Add(time.Second * time.Duration( -1 * i ))
 		code := DueDiligence(then)
 		if code == arg {
 			return true
@@ -21,5 +29,8 @@ func DidDiligence(now time.Time, arg string) bool {
 }
 
 func DueDiligence(when time.Time) string {
-	return fmt.Sprintf("%s", fmt.Sprintf("%x", md5.Sum([]byte(when.Format(time.RFC1123)))))[0:6]
+	if Locale == nil {
+		Locale = time.FixedZone("UTC", 0)
+	}
+	return fmt.Sprintf("%x", md5.Sum( []byte(  when.In(Locale).Format(time.RFC1123)  ) ))[0:6]
 }
